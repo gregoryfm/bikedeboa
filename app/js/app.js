@@ -897,9 +897,10 @@ $(() => {
         // Queries Google Geocoding service for the position address
         const mapCenter = map.getCenter();
         newMarkerTemp = {lat: mapCenter.lat(), lng: mapCenter.lng()};
+        
         BIKE.geocodeLatLng(
           newMarkerTemp.lat, newMarkerTemp.lng,
-          (address) => {
+          address => {
             // console.log('Resolved location address:');
             // console.log(address);
             newMarkerTemp.address = address;
@@ -915,6 +916,27 @@ $(() => {
           openNewOrEditPlaceModal();
         } else {
           if (testNewLocalBounds()) {
+            // Search for places nearby
+            _placesService.nearbySearch({
+              location: newMarkerTemp,
+              radius: 50
+              // rankBy: google.maps.places.RankBy.DISTANCE 
+            }, (results, status) => {
+              if (status === google.maps.places.PlacesServiceStatus.OK) {
+                console.log(results);
+                
+                for (var i = 0; i < results.length; i++) {
+                  const r = results[i];
+                  r.distance = google.maps.geometry.spherical.computeDistanceBetween(
+                    mapCenter, r.geometry.location);
+                }
+
+                results.sort((a, b) => {
+                  return a.distance - b.distance;
+                });
+              }
+            });
+
             openNewOrEditPlaceModal();
           } else {
             const mapCenter = map.getCenter();
@@ -1211,7 +1233,7 @@ $(() => {
     $('#newPlaceModal #saveNewPlaceBtn').prop('disabled', !isOk);
   }
 
-  // @todo clean up this mess
+  // @todo clean up this mess plz
   function openNewOrEditPlaceModal() {
     // Reset fields
     _uploadingPhotoBlob = '';
@@ -1343,12 +1365,16 @@ $(() => {
       $(e.currentTarget).addClass('expanded'); 
     }); 
 
+
     // Finally, display the modal
     const showModal = () => {
       $('#newPlaceModal').modal('show');
+      
       // We can only set the nav title after the modal has been opened
       setPageTitle(openedMarker ? 'Editar bicicletário' : 'Novo bicicletário');
     }
+
+    // @todo really confusing stuff here
     if (openedMarker && $('#placeDetailsModal').is(':visible')) {
       $('#placeDetailsModal').modal('hide').one('hidden.bs.modal', () => { 
         showModal();
@@ -2067,7 +2093,10 @@ $(() => {
       }
     });
 
-    geocoder = new google.maps.Geocoder();
+    _geocoder = new google.maps.Geocoder();
+
+    _placesService = new google.maps.places.PlacesService(map); 
+        
 
     setupAutocomplete();
 

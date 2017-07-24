@@ -15,26 +15,30 @@ BIKE.getURLParameter = function(name) {
 BIKE.geocodeLatLng = function(lat, lng, successCB, failCB) {
   const latlng = {lat: parseFloat(lat), lng: parseFloat(lng)};
 
-  geocoder.geocode({'location': latlng}, function(results, status) {
-    if (status === google.maps.GeocoderStatus.OK) {
-      // console.log('geocoding results', results);
-      
-      if (results[0]) {
-        const r = results[0].address_components;
-        const address = `${r[1].short_name}, ${r[0].short_name} - ${r[3].short_name}`
-        if (successCB && typeof successCB === 'function') {
-          successCB(address);
+  if (_geocoder) {
+    _geocoder.geocode({'location': latlng}, function(results, status) {
+      if (status === google.maps.GeocoderStatus.OK) {
+        // console.log('geocoding results', results);
+        
+        if (results[0]) {
+          const r = results[0].address_components;
+          const address = `${r[1].short_name}, ${r[0].short_name} - ${r[3].short_name}`
+          if (successCB && typeof successCB === 'function') {
+            successCB(address);
+          }
+        } else {
+          console.error('No results found');
         }
       } else {
-        console.error('No results found');
+        console.error('Geocoder failed due to: ' + status);
+        if (failCB && typeof failCB === 'function') {
+          failCB();
+        }
       }
-    } else {
-      console.error('Geocoder failed due to: ' + status);
-      if (failCB && typeof failCB === 'function') {
-        failCB();
-      }
-    }
-  });
+    });
+  } else {
+    console.error('geocoder not initialized');
+  }
 };
 
 window.toggleSpinner = () => {
