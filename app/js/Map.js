@@ -164,7 +164,6 @@ BDB.Map = (function () {
       geolocationRadius.setRadius(gposition.accuracy);
 
       let pos = geolocationMarker.getPosition();
-      debugger;
       if (pos){
         setOrientationMarker();
           orientationMarker.setIcon({
