@@ -8,6 +8,7 @@ BDB.Map = (function () {
   let mapBounds;
   let geolocationMarker;
   let geolocationRadius;
+  let orientationMarker;
   // let geolocationInitialized;
   // let positionWatcher;
   let bikeLayer;
@@ -32,7 +33,7 @@ BDB.Map = (function () {
 
   let initMap = function (coords, zoomValue, pinUser) {
     // Dynamically inject Google Map's lib
-    $.getScript('https://maps.googleapis.com/maps/api/js?key=<GOOGLE_MAPS_ID>&libraries=places&language=pt-BR', () => {
+    $.getScript('https://maps.googleapis.com/maps/api/js?key=<GOOGLE_MAPS_ID>&libraries=places,geometry&language=pt-BR', () => {
       $.getScript('/lib/infobox.min.js', () => {
         $.getScript('/lib/markerclusterer.min.js', () => {
           // $.getScript('/lib/markerwithlabel.min.js', () => {
@@ -161,6 +162,20 @@ BDB.Map = (function () {
       geolocationMarker.setPosition(gposition);
       geolocationRadius.setCenter(gposition);
       geolocationRadius.setRadius(gposition.accuracy);
+
+      let pos = geolocationMarker.getPosition();
+      debugger;
+      if (pos){
+        setOrientationMarker();
+          orientationMarker.setIcon({
+          url: '/img/icon_geo_orientation.svg', // url
+          scaledSize: new google.maps.Size(CURRENT_LOCATION_MARKER_W, CURRENT_LOCATION_MARKER_H), // scaled size
+          origin: new google.maps.Point(0, 0), // origin
+          anchor: new google.maps.Point(10, 25), // anchor
+          rotation: google.maps.geometry.spherical.computeHeading(pos, pos)
+        });
+      orientationMarker.setPosition(gposition);
+      }
     }
   };
   let updateUserPosition = function (coords, center = true, convert = true) {
@@ -199,7 +214,13 @@ BDB.Map = (function () {
       strokeOpacity: '0'
     });
   };
-
+  let setOrientationMarker = function(){
+    orientationMarker = new google.maps.Marker({
+      optimized: true,
+      map: map,
+      clickable: false,
+    });
+  }
   let geolocate = function (options = false) {
     document.addEventListener('geolocation:done', function (result) {
       if (result.detail.status) {
