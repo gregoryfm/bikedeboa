@@ -165,7 +165,6 @@ BDB.Map = (function () {
 
       let pos = geolocationMarker.getPosition();
       if (pos){
-        setOrientationMarker();
           orientationMarker.setIcon({
           url: '/img/icon_geo_orientation.svg', // url
           scaledSize: new google.maps.Size(CURRENT_LOCATION_MARKER_W, CURRENT_LOCATION_MARKER_H), // scaled size
@@ -202,6 +201,8 @@ BDB.Map = (function () {
         anchor: new google.maps.Point(CURRENT_LOCATION_MARKER_W / 2, CURRENT_LOCATION_MARKER_H / 2), // anchor
       }
     });
+    setOrientationMarker();
+
   };
   let setRadius = function () {
     geolocationRadius = new google.maps.Circle({
